@@ -1,4 +1,7 @@
 # US_Projekt
 
-Dobrze ze tu wszedles
-bo mam dla ciebie historie...
+Projekt Usługi Sieciowe
+Temat: System rekomendacji gier wideo
+Autorzy: Karolina Alisz, Magdalena Pietrzak, Krystian Wachowski
+
+W projekcie został wykorzystany ...

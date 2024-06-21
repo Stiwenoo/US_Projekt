@@ -1,63 +1,47 @@
 import implicit
-import pandas as pd
-import numpy as np
 import os
 from scipy.sparse import csr_matrix
-import sys
 import pickle
 
-# rec_games_file = 'rec_games.pkl'
-# with open(os.path.join(os.path.dirname(__file__), '..', 'data', rec_games_file), 'rb') as file:  
-#     rec_games = pickle.load(file)
 
-# print(rec_games)
-# print(rec_games['hours'].dtypes)
+# Tworzenie macierzy csr
+def matrix_gen(pivot_file, matrix_file):
+    # pivot_file = 'pivot_rec_games_100k.pkl'
+    with open(os.path.join(os.path.dirname(__file__), '..', 'data', pivot_file), 'rb') as file:
+        pivot_table = pickle.load(file)
+    print(pivot_table)
 
-# Wybieranie próbki zawierającej 80 tysięcy unikalnych użytkowników
-# sample_data = rec_games.sample(n=80000, random_state=1)
+    sparse_matrix = csr_matrix(pivot_table)
+    print(sparse_matrix)
 
-# Tworzenie pivot table
-# pivot_table = sample_data.pivot_table(index='title', columns='user_id', values='hours', aggfunc='sum')
-# pivot_table.fillna(0, inplace=True)
+    pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', matrix_file)
+    with open(pickle_file, 'wb') as f:
+        pickle.dump(sparse_matrix, f)
 
-# print(pivot_table.head())
 
-# pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'pivot_80k.pkl')
-# with open(pickle_file, 'wb') as f:
-#     pickle.dump(pivot_table, f)
+def matrix_load(matrix_file):
+    # matrix_file = 'matrix_rec_games_100k.pkl'
+    with open(os.path.join(os.path.dirname(__file__), '..', 'data', matrix_file), 'rb') as file:
+        sparse_matrix = pickle.load(file)
+    return sparse_matrix
 
-pivot_80k_file = 'pivot_80k.pkl'
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', pivot_80k_file), 'rb') as file:  
-    pivot_table = pickle.load(file)
 
-print(pivot_table.index[4])
-print(pivot_table.columns[69488])
+def model_gen(matrix_file, model_file):
+    model = implicit.als.AlternatingLeastSquares(factors=20, regularization=0.1, iterations=20)
+    model.fit(matrix_load(matrix_file))
 
-# sparse_matrix = csr_matrix(pivot_table)
-# print(sparse_matrix)
+    pickle_file = os.path.join(os.path.dirname(__file__), '..', 'models', model_file)
+    with open(pickle_file, 'wb') as f:
+        pickle.dump(model, f)
 
-# pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'matrix_80k.pkl')
-# with open(pickle_file, 'wb') as f:
-#     pickle.dump(sparse_matrix, f)
 
-matrix_80k_file = 'matrix_80k.pkl'
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', matrix_80k_file), 'rb') as file:  
-    sparse_matrix = pickle.load(file)
+def model_load(model_file):
+    with open(os.path.join(os.path.dirname(__file__), '..', 'models', model_file), 'rb') as file:
+        model = pickle.load(file)
+    return model
 
-print(sparse_matrix)
 
-# model = implicit.als.AlternatingLeastSquares(factors=20, regularization=0.1, iterations=20)
-
-# model.fit(sparse_matrix)
-
-# pickle_file = os.path.join(os.path.dirname(__file__), '..', 'models', 'als_model_80k.pkl')
-# with open(pickle_file, 'wb') as f:
-#     pickle.dump(model, f)
-
-als_model_80k_file = 'als_model_80k.pkl'
-with open(os.path.join(os.path.dirname(__file__), '..', 'models', als_model_80k_file), 'rb') as file:  
-    model = pickle.load(file)
-
-ids, scores= model.similar_items(4, N=10)
-
+model = model_load('als_model_100k.pkl')
+# model_gen('matrix_rec_games_100k.pkl', 'als_model_100k.pkl')
+ids, scores = model.similar_items(4, N=10)
 print(ids)

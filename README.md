@@ -1,6 +1,6 @@
 # US_Projekt
 
-# System rekomendacji gier wideo
+**System rekomendacji gier wideo**
 Karolina Alisz, Magdalena Pietrzak, Krystian Wachowski
 
 ## Opis & cel projektu

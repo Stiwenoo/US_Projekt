@@ -4,15 +4,29 @@ import pandas as pd
 import numpy as np
 import implicit
 
-model_name = 'als_model_100k.pkl'
+pivot_file = 'pivot_rec_games_100k.pkl'
+with open(os.path.join(os.path.dirname(__file__), '..', 'data', pivot_file), 'rb') as file:
+    pivot_table = pickle.load(file)
+print(pivot_table.index[10])
+
+model_name = 'tran_als_model_100k.pkl'
 with open(os.path.join(os.path.dirname(__file__), '..', 'models', model_name), 'rb') as file:  
     model = pickle.load(file)
 
-ids, scores = model.similar_items(16685, N=30)
-print(ids, scores)
 
-print(type(ids.tolist()))
-print(type(scores.tolist()))
+# Extracting the value for user_id=2 and title='Task A'
+# value = pivot_table.loc['$1 Ride', 58]
+
+# Display the value
+# print(value)
+# print(pivot_table.index[2])
+ids, scores = model.similar_items(10, N=30)
+# ids, scores = model.recommend(10, pivot_table.loc['$1 Ride', 58], N=10, filter_already_liked_items=False)
+
+# print(ids, scores)
+#
+print(ids.tolist())
+print(scores.tolist())
 
 
 # Wybór przykładowej gry (app_id) do znalezienia podobnych gier
@@ -87,8 +101,9 @@ def mapping_game_titles(pivot_name):
 # app_id_index_mapping = {num: index for num, index in enumerate(pivot_table.index)}
 # print(app_id_index_mapping)
 
-# mapped_list = [app_id_index_mapping[value] for value in app_ids]
-# print(mapped_list)
+full_map = mapping_game_titles('pivot_rec_games_100k.pkl')
+mapped_list = [full_map[value] for value in ids]
+print(mapped_list)
 # print(app_id_index_mapping)
 
 # Iterujemy przez indeksy obu list jednocześnie

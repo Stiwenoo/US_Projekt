@@ -40,9 +40,14 @@ with open(pickle_file, 'wb') as f:
 # Wybieranie próbki zawierającej 100 tysięcy unikalnych użytkowników
 sample_data = merged_data_unique.sample(n=100000, random_state=1)
 
+# Filtrowanie użytkowników (user_id) - na przykład wybór pierwszych X unikalnych użytkowników
+# sample_data = merged_data_unique['user_id'].unique()[:10000]
+
 # Tworzenie pivot table
 pivot_table = sample_data.pivot_table(index='title', columns='user_id', values='hours', aggfunc='sum')
 pivot_table.fillna(0, inplace=True)
+
+print(pivot_table)
 
 # Zapisanie do pliku pickle
 pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'pivot_rec_games_100k.pkl')

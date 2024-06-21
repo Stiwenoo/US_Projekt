@@ -2,6 +2,7 @@ import implicit
 import os
 from scipy.sparse import csr_matrix
 import pickle
+import pandas as pd
 
 
 # Tworzenie macierzy csr
@@ -12,6 +13,8 @@ def matrix_gen(pivot_file, matrix_file):
     print(pivot_table)
 
     sparse_matrix = csr_matrix(pivot_table)
+    print(sparse_matrix)
+    sparse_matrix = sparse_matrix.T.tocsr()
     print(sparse_matrix)
 
     pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', matrix_file)
@@ -40,8 +43,8 @@ def model_load(model_file):
         model = pickle.load(file)
     return model
 
-
-model_gen('matrix_rec_games_100k.pkl', 'als_model_100k.pkl')
-model = model_load('als_model_100k.pkl')
-ids, scores = model.similar_items(16685, N=100)
-print(ids, scores)
+# matrix_gen('pivot_rec_games_100k.pkl', 'matrix_100k.pkl')
+# model_gen('matrix_100k.pkl', 'tran_als_model_100k.pkl')
+# model = model_load('als_model_100k.pkl')
+# ids, scores = model.similar_items(10, N=50)
+# print(ids, scores)

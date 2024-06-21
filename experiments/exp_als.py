@@ -41,7 +41,7 @@ def model_load(model_file):
     return model
 
 
+model_gen('matrix_rec_games_100k.pkl', 'als_model_100k.pkl')
 model = model_load('als_model_100k.pkl')
-# model_gen('matrix_rec_games_100k.pkl', 'als_model_100k.pkl')
-ids, scores = model.similar_items(4, N=10)
-print(ids)
+ids, scores = model.similar_items(16685, N=100)
+print(ids, scores)

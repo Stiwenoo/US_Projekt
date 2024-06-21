@@ -45,6 +45,6 @@ pivot_table = sample_data.pivot_table(index='title', columns='user_id', values='
 pivot_table.fillna(0, inplace=True)
 
 # Zapisanie do pliku pickle
-pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'pivot_rec_games.pkl')
+pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'pivot_rec_games_100k.pkl')
 with open(pickle_file, 'wb') as f:
     pickle.dump(pivot_table, f)

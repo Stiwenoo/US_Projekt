@@ -5,12 +5,13 @@ from scipy.sparse import csr_matrix
 import sys
 import pickle
 
+
 data_name = 'recommendations.pkl'
 with open(os.path.join(os.path.dirname(__file__), '..', 'data', data_name), 'rb') as file:  
     data = pickle.load(file)
 
 # Odczytywanie danych z pliku CSV
-# data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'recommendations.csv'))
+data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'recommendations.csv'))
 # print("Odczytywanie danych z pliku CSV")
 
 # Sprawdzenie podstawowych informacji o danych

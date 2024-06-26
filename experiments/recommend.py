@@ -26,16 +26,18 @@ def recommend_game_from_game(model, game_id, number_of_recommendations, map_of_t
 
     # To do dokonczenia
     if type(game_id) is str:
-        game_id = map_of_titles[game_id]
+        game_id = list(map_of_titles.keys())[list(map_of_titles.values()).index(game_id)]
 
     print('app_id:', game_id, '\nGame:', map_of_titles[game_id])
-    print('\n', map_of_titles)
+    # print('\n', map_of_titles)
     ids, scores = model.similar_items(game_id, number_of_recommendations)
+    print(scores.tolist())
 
     mapped_list = [map_of_titles[value] for value in ids]
 
     return mapped_list
 
 
-print(recommend_game_from_game(model_load('als_model_9k_gamers.pkl'), 250, 10,
+# print(mapping_game_titles('pivot_9k_gamers.pkl'))
+print(recommend_game_from_game(model_load('als_model_9k_gamers.pkl'), 'Dota 2', 10,
                                mapping_game_titles('pivot_9k_gamers.pkl')))

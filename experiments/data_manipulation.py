@@ -96,6 +96,7 @@ def join_columns(row):
     combined_list.extend(row['genres'])
     # combined_list.extend(row['short_description'])
     combined_list.extend(row['steamspy_tags'])
+    combined_list.append(row['date_category'])
 
     # Konwertowanie wszystkich elementów listy na stringi
     combined_list = [str(item) for item in combined_list]
@@ -105,12 +106,22 @@ def join_columns(row):
     return combined_string
 
 
+# Funkcja do klasyfikacji dat
+def categorize_date(date):
+    if date < pd.Timestamp('2007-01-01'):
+        return 'retrogry'
+    elif date < pd.Timestamp('2016-01-01'):
+        return 'starocie'
+    else:
+        return 'nowinki'
+
+
 def dataframe_gen2(data_file):
     # with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
     #     data = pickle.load(file)
 
     steam_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'steam.csv'))
-    columns_to_drop_g = ['release_date', 'english', 'platforms', 'required_age', 'achievements',
+    columns_to_drop_g = ['english', 'platforms', 'required_age', 'achievements',
                          'positive_ratings', 'negative_ratings', 'average_playtime',
                          'median_playtime', 'owners', 'price']
     steam_data.drop(columns=columns_to_drop_g, inplace=True)
@@ -129,6 +140,8 @@ def dataframe_gen2(data_file):
     merged_data = pd.merge(steam_data, steam_desc_data, on='app_id', how='inner')
     merged_data['short_description'] = merged_data['short_description'].apply(lambda x: x. split())
 
+    merged_data['release_date'] = pd.to_datetime(merged_data['release_date'])
+
     merged_data['categories'] = merged_data['categories'].apply(lambda x: x.split(';'))
     merged_data['categories'] = merged_data['categories'].apply(remove_space)
     merged_data['developer'] = merged_data['developer'].str.replace(' ', '')
@@ -137,6 +150,8 @@ def dataframe_gen2(data_file):
     merged_data['genres'] = merged_data['genres'].apply(remove_space)
     merged_data['steamspy_tags'] = merged_data['steamspy_tags'].apply(lambda x: x.split(';'))
     merged_data['steamspy_tags'] = merged_data['steamspy_tags'].apply(remove_space)
+    # Tworzenie nowej kolumny z kategoriami
+    merged_data['date_category'] = merged_data['release_date'].apply(categorize_date)
 
     # Zastosowanie funkcji do każdego wiersza w DataFrame
     merged_data['combined'] = merged_data.apply(join_columns, axis=1)
@@ -176,8 +191,24 @@ dataframe_gen2('rec_games_more.pkl')
 with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games_more.pkl'), 'rb') as file:
     data1 = pickle.load(file)
 
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
-    data2 = pickle.load(file)
+# with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
+#     data2 = pickle.load(file)
 
-print(data1.iloc[350]['combined'])
-print(data1.info())
+print(data1.iloc[15500]['combined'])
+# print(data1.info())
+
+# steam_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'steam.csv'))
+# columns_to_drop_g = ['english', 'platforms', 'required_age', 'achievements',
+#                      'positive_ratings', 'negative_ratings', 'average_playtime',
+#                      'median_playtime', 'owners', 'price']
+# steam_data.drop(columns=columns_to_drop_g, inplace=True)
+# steam_data = steam_data.rename(columns={'appid': 'app_id'})
+
+# print(steam_data.info())
+# counter = 1
+# steam_data['release_date'].to_datetime()
+# for game in steam_data['release_date']:
+#     if counter == 1:
+#         print(type(game))
+#         counter = 2
+    

@@ -42,4 +42,4 @@ def recommend(game_id, model_file):
 
 
 # model_gen('rec_games_more.pkl', 'cbr_model.pkl')
-recommend('RimWorld', 'cbr_model.pkl')
+recommend('Tropico 4', 'cbr_model.pkl')

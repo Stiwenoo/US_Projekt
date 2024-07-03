@@ -1,6 +1,8 @@
 import pandas as pd
 import os
 import pickle
+import re
+from nltk.stem import PorterStemmer
 
 
 def dataframe_gen():
@@ -12,7 +14,8 @@ def dataframe_gen():
     rec_data.drop(columns=columns_to_drop_r, inplace=True)
 
     # Usunięcie kolumn
-    columns_to_drop_g = ['date_release','win','mac','linux','rating','positive_ratio','user_reviews','price_final','price_original','discount','steam_deck']
+    columns_to_drop_g = ['date_release', 'win', 'mac', 'linux', 'rating', 'positive_ratio', 'user_reviews',
+                         'price_final', 'price_original', 'discount', 'steam_deck']
     games_data.drop(columns=columns_to_drop_g, inplace=True)
 
     # Mergowanie
@@ -23,6 +26,8 @@ def dataframe_gen():
     merged_data_unique = merged_data.drop_duplicates(subset=['app_id', 'user_id'])
     print(len(merged_data_unique))
     print(merged_data_unique.head())
+
+    merged_data_unique['hours'] = merged_data_unique['hours'].astype('int32')
 
     # Zapisanie do pliku pickle
     pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl')
@@ -64,3 +69,115 @@ def pivot_gen(data, pivot_file):
         pickle.dump(pivot_table, f)
 
     return pivot_table
+
+
+# Funkcja do usuwania HTML-owych tagów
+def remove_html_tags(text):
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
+
+def remove_space(word):
+    result = []
+    for i in word:
+        result.append(i. replace(' ', ''))
+    return result
+
+
+# Funkcja do połączenia wartości w jedną listę i zrobienia join ze spacją
+def join_columns(row):
+    combined_list = []
+
+    # Dodaj zawartość kolumn do listy, zamieniając stringi w listy
+    combined_list.append(row['name'])
+    combined_list.extend(row['categories'])
+    combined_list.append(row['developer'])
+    combined_list.append(row['publisher'])
+    combined_list.extend(row['genres'])
+    # combined_list.extend(row['short_description'])
+    combined_list.extend(row['steamspy_tags'])
+
+    # Konwertowanie wszystkich elementów listy na stringi
+    combined_list = [str(item) for item in combined_list]
+
+    # Zrób join ze spacją
+    combined_string = ' '.join(combined_list)
+    return combined_string
+
+
+def dataframe_gen2(data_file):
+    # with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
+    #     data = pickle.load(file)
+
+    steam_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'steam.csv'))
+    columns_to_drop_g = ['release_date', 'english', 'platforms', 'required_age', 'achievements',
+                         'positive_ratings', 'negative_ratings', 'average_playtime',
+                         'median_playtime', 'owners', 'price']
+    steam_data.drop(columns=columns_to_drop_g, inplace=True)
+    steam_data = steam_data.rename(columns={'appid': 'app_id'})
+
+    steam_desc_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'steam_description_data.csv'))
+    steam_desc_data = steam_desc_data.rename(columns={'steam_appid': 'app_id'})
+
+    # Usunięcie HTML-owych tagów z kolumny 'short_description'
+    steam_desc_data['short_description'] = steam_desc_data['short_description'].apply(remove_html_tags)
+
+    # Usunięcie kolumn
+    columns_to_drop_d = ['about_the_game']
+    steam_desc_data.drop(columns=columns_to_drop_d, inplace=True)
+
+    merged_data = pd.merge(steam_data, steam_desc_data, on='app_id', how='inner')
+    merged_data['short_description'] = merged_data['short_description'].apply(lambda x: x. split())
+
+    merged_data['categories'] = merged_data['categories'].apply(lambda x: x.split(';'))
+    merged_data['categories'] = merged_data['categories'].apply(remove_space)
+    merged_data['developer'] = merged_data['developer'].str.replace(' ', '')
+    merged_data['publisher'] = merged_data['publisher'].str.replace(' ', '')
+    merged_data['genres'] = merged_data['genres'].apply(lambda x: x.split(';'))
+    merged_data['genres'] = merged_data['genres'].apply(remove_space)
+    merged_data['steamspy_tags'] = merged_data['steamspy_tags'].apply(lambda x: x.split(';'))
+    merged_data['steamspy_tags'] = merged_data['steamspy_tags'].apply(remove_space)
+
+    # Zastosowanie funkcji do każdego wiersza w DataFrame
+    merged_data['combined'] = merged_data.apply(join_columns, axis=1)
+
+    # Zamiana wszystkich liter na małe w kolumnie 'combined'
+    merged_data['combined'] = merged_data['combined'].str.lower()
+
+    # Usuwa wszystkie przecinki i kropki
+    merged_data['combined'] = merged_data['combined'].str.replace(',', '')
+    merged_data['combined'] = merged_data['combined'].str.replace('.', '')
+
+    # Usunięcie kolumn
+    columns_to_drop_m = ['developer', 'publisher', 'categories', 'genres', 'detailed_description', 'short_description']
+    merged_data.drop(columns=columns_to_drop_m, inplace=True)
+
+    # Standaryzowanie slow
+    ps = PorterStemmer()
+
+    def stems(text):
+        result = []
+        for i in text.split():
+            result.append(ps.stem(i))
+
+        return " ".join(result)
+
+    merged_data['combined'] = merged_data['combined'].apply(stems)
+
+    # Zapisanie do pliku pickle
+    pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', data_file)
+    with open(pickle_file, 'wb') as f:
+        pickle.dump(merged_data, f)
+
+
+dataframe_gen2('rec_games_more.pkl')
+# dataframe_gen()
+
+with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games_more.pkl'), 'rb') as file:
+    data1 = pickle.load(file)
+
+with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
+    data2 = pickle.load(file)
+
+print(data1.iloc[350]['combined'])
+print(data1.info())

@@ -3,6 +3,7 @@ import os
 import pickle
 import sys
 import threading
+import difflib  # Dodajemy bibliotekę difflib
 
 # Dodaj katalog nadrzędny do sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -49,6 +50,12 @@ def load_data():
 threading.Thread(target=load_model).start()
 threading.Thread(target=load_data).start()
 
+# Funkcja pomocnicza do znalezienia podobnych tytułów gier
+def find_similar_titles(input_title, all_titles):
+    input_title_lower = input_title.lower()
+    similar_titles = difflib.get_close_matches(input_title_lower, all_titles, n=3, cutoff=0.6)
+    return similar_titles
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -64,11 +71,23 @@ def get_recommendations():
             return jsonify({'error': 'Model or data not loaded yet'}), 503
 
         print(f"app: Received recommendation request for game: {game_title}")
-        recommendations = recommend(game_title, sim_model, data)
-        if not recommendations:
-            return jsonify({'error': 'Game title not found'}), 404
 
-        return render_template('index.html', recommendations=recommendations)
+        # Sprawdzamy, czy istnieje dokładny tytuł gry
+        exact_match = data[data['name'].str.lower() == game_title.lower()]
+        if not exact_match.empty:
+            recommendations = recommend(game_title, sim_model, data)
+            if not recommendations:
+                return jsonify({'error': 'Game title not found'}), 404
+            return render_template('index.html', recommendations=recommendations)
+        
+        # Jeśli nie znaleziono dokładnego dopasowania, szukamy podobnych tytułów
+        all_game_titles = data['name'].str.lower().tolist()
+        similar_titles = find_similar_titles(game_title, all_game_titles)
+        if similar_titles:
+            return jsonify({'error': 'Game title not found. Did you mean one of these?', 'similar_titles': similar_titles})
+        else:
+            return jsonify({'error': 'Game title not found and no similar titles found'}), 404
+
     except Exception as e:
         print(f"app: Error in get_recommendations: {e}")
         return jsonify({'error': 'An error occurred'}), 500

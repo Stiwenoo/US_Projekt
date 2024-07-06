@@ -28,9 +28,13 @@ def model_gen(data_file, model_name):
 def recommend(game_id, sim_model, data):
     print(f"exp_cbr: Recommending for game_id {game_id}...")
     try:
-        index = data[data['name'] == game_id].index[0]
+        # Zamień wprowadzony tytuł na małe litery
+        game_id_lower = game_id.lower()
 
-        # Sort the games based on the similarity scores
+        # Znajdź indeks tytułu gry w danych (ignorując wielkość liter)
+        index = data[data['name'].str.lower() == game_id_lower].index[0]
+
+        # Sortuj gry na podstawie wyników podobieństwa
         sim_scores = sorted(list(enumerate(sim_model[index])), key=lambda x: x[1], reverse=True)
         sim_scores = sim_scores[0:11]
 
@@ -41,5 +45,6 @@ def recommend(game_id, sim_model, data):
     except Exception as e:
         print(f"exp_cbr: Error in recommend function: {e}")
         return []
+
 
 print("exp_cbr: Functions defined.")

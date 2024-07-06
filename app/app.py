@@ -1,27 +1,53 @@
 from flask import Flask, request, jsonify
 import os
 import pickle
-from experiments.exp_cbr import recommend
+import sys
+import threading
+
+# Dodaj katalog nadrzędny do sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+print("app: Importing recommend function...")
+try:
+    from experiments.exp_cbr import recommend
+    print("app: Recommend function imported successfully.")
+except Exception as e:
+    print(f"app: Error importing recommend function: {e}")
 
 app = Flask(__name__)
 
-# Load the model and data
 MODEL_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'cbr_model.pkl')
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games_more.pkl')
 
-try:
-    with open(MODEL_FILE_PATH, 'rb') as file:
-        sim_model = pickle.load(file)
-    print("Model loaded successfully.")
-except Exception as e:
-    print(f"Failed to load model: {e}")
+# Globalne zmienne do przechowywania modelu i danych
+sim_model = None
+data = None
 
-try:
-    with open(DATA_FILE_PATH, 'rb') as file:
-        data = pickle.load(file)
-    print("Data loaded successfully.")
-except Exception as e:
-    print(f"Failed to load data: {e}")
+def load_model():
+    global sim_model
+    try:
+        print("app: Loading model...")
+        with open(MODEL_FILE_PATH, 'rb') as file:
+            print("app: Model file opened.")
+            sim_model = pickle.load(file)
+            print("app: Model loaded.")
+    except Exception as e:
+        print(f"app: Failed to load model: {e}")
+
+def load_data():
+    global data
+    try:
+        print("app: Loading data...")
+        with open(DATA_FILE_PATH, 'rb') as file:
+            print("app: Data file opened.")
+            data = pickle.load(file)
+            print("app: Data loaded.")
+    except Exception as e:
+        print(f"app: Failed to load data: {e}")
+
+# Uruchom wczytywanie modelu i danych w wątkach
+threading.Thread(target=load_model).start()
+threading.Thread(target=load_data).start()
 
 @app.route('/recommend', methods=['GET'])
 def get_recommendations():
@@ -29,14 +55,18 @@ def get_recommendations():
         game_title = request.args.get('title', default='', type=str)
         if not game_title:
             return jsonify({'error': 'No game title provided'}), 400
-        
+
+        if sim_model is None or data is None:
+            return jsonify({'error': 'Model or data not loaded yet'}), 503
+
+        print(f"app: Received recommendation request for game: {game_title}")
         recommendations = recommend(game_title, sim_model, data)
         if not recommendations:
             return jsonify({'error': 'Game title not found'}), 404
-        
+
         return jsonify({'recommendations': recommendations})
     except Exception as e:
-        print(f"Error in get_recommendations: {e}")
+        print(f"app: Error in get_recommendations: {e}")
         return jsonify({'error': 'An error occurred'}), 500
 
 if __name__ == '__main__':

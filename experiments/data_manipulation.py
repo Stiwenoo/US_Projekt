@@ -187,28 +187,3 @@ def dataframe_gen2(data_file):
 
 dataframe_gen2('rec_games_more.pkl')
 # dataframe_gen()
-
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games_more.pkl'), 'rb') as file:
-    data1 = pickle.load(file)
-
-# with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
-#     data2 = pickle.load(file)
-
-print(data1.iloc[15500]['combined'])
-# print(data1.info())
-
-# steam_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'steam.csv'))
-# columns_to_drop_g = ['english', 'platforms', 'required_age', 'achievements',
-#                      'positive_ratings', 'negative_ratings', 'average_playtime',
-#                      'median_playtime', 'owners', 'price']
-# steam_data.drop(columns=columns_to_drop_g, inplace=True)
-# steam_data = steam_data.rename(columns={'appid': 'app_id'})
-
-# print(steam_data.info())
-# counter = 1
-# steam_data['release_date'].to_datetime()
-# for game in steam_data['release_date']:
-#     if counter == 1:
-#         print(type(game))
-#         counter = 2
-    

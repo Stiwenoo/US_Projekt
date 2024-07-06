@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Recommender</title>
+</head>
+<body>
+    <h1>Game Recommender</h1>
+    <form action="/recommend" method="get">
+        <label for="title">Enter game title:</label>
+        <input type="text" id="title" name="title">
+        <input type="submit" value="Get Recommendations">
+    </form>
+    {% if recommendations %}
+        <h2>Recommendations:</h2>
+        <ul>
+            {% for game in recommendations %}
+                <li>{{ game }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

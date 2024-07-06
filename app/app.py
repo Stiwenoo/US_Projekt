@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import os
 import pickle
 import sys
@@ -49,6 +49,10 @@ def load_data():
 threading.Thread(target=load_model).start()
 threading.Thread(target=load_data).start()
 
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route('/recommend', methods=['GET'])
 def get_recommendations():
     try:
@@ -64,7 +68,7 @@ def get_recommendations():
         if not recommendations:
             return jsonify({'error': 'Game title not found'}), 404
 
-        return jsonify({'recommendations': recommendations})
+        return render_template('index.html', recommendations=recommendations)
     except Exception as e:
         print(f"app: Error in get_recommendations: {e}")
         return jsonify({'error': 'An error occurred'}), 500

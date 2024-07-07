@@ -3,10 +3,12 @@ import os
 import pickle
 import sys
 import threading
-import difflib  # Dodajemy bibliotekę difflib
 
-# Dodaj katalog nadrzędny do sys.path
+# Dodaj katalog nadrzędny do sys.path, aby móc importować moduły z innych katalogów
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Importuj bezpośrednio z exp_cbr.py
+from experiments.exp_cbr import recommend, model_gen
 
 print("app: Importing recommend function...")
 try:
@@ -32,8 +34,11 @@ def load_model():
             print("app: Model file opened.")
             sim_model = pickle.load(file)
             print("app: Model loaded.")
-    except Exception as e:
-        print(f"app: Failed to load model: {e}")
+    except FileNotFoundError:
+        print("app: Model file not found. Generating model...")
+        # Wywołaj funkcję model_gen do wygenerowania modelu
+        model_gen(DATA_FILE_PATH, MODEL_FILE_PATH)
+        load_model()  # Rekurencyjnie próbuj załadować model ponownie
 
 def load_data():
     global data

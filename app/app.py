@@ -32,8 +32,10 @@ def load_model():
             print("app: Model file opened.")
             sim_model = pickle.load(file)
             print("app: Model loaded.")
-    except Exception as e:
-        print(f"app: Failed to load model: {e}")
+    except FileNotFoundError:
+        print("app: Model file not found. Generating model...")
+        subprocess.run(["python", "generate_cbr.py"])
+        load_model()  # Rekurencyjnie próbuj załadować model ponownie
 
 def load_data():
     global data

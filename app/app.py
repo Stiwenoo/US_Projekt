@@ -3,11 +3,12 @@ import os
 import pickle
 import sys
 import threading
-from experiments.exp_cbr import recommend, model_gen
 
-
-# Dodaj katalog nadrzędny do sys.path
+# Dodaj katalog nadrzędny do sys.path, aby móc importować moduły z innych katalogów
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Importuj bezpośrednio z exp_cbr.py
+from experiments.exp_cbr import recommend, model_gen
 
 print("app: Importing recommend function...")
 try:

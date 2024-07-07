@@ -5,6 +5,7 @@ import re
 from nltk.stem import PorterStemmer
 
 
+# Tworzenie dataframe'u dla modelu ALS
 def dataframe_gen():
     games_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'games.csv'))
     rec_data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'recommendations.csv'))
@@ -37,6 +38,7 @@ def dataframe_gen():
     return merged_data_unique
 
 
+# Próbkowanie danych z dataframe'u ALS
 def data_sampling(data_file: str, column_tobe_sampled: str, val1: int = 0, val2: int = 9000):
     # Wczytywanie danych
     with open(os.path.join(os.path.dirname(__file__), '..', 'data', data_file), 'rb') as file:
@@ -58,6 +60,7 @@ def data_sampling(data_file: str, column_tobe_sampled: str, val1: int = 0, val2:
     return data_sampled
 
 
+# Tworzenie tablicy przestawnej dla modelu ALS
 def pivot_gen(data, pivot_file):
     # Tworzenie pivot table
     pivot_table = data.pivot_table(index='title', columns='user_id', values='hours', aggfunc='sum')
@@ -77,6 +80,7 @@ def remove_html_tags(text):
     return re.sub(clean, '', text)
 
 
+#Funkcja usuwająca spacje z wyrazów
 def remove_space(word):
     result = []
     for i in word:
@@ -84,7 +88,7 @@ def remove_space(word):
     return result
 
 
-# Funkcja do połączenia wartości w jedną listę i zrobienia join ze spacją
+# Funkcja do połączenia wartości w jedną listę i zrobienia join ze spacją (Model CBR)
 def join_columns(row):
     combined_list = []
 
@@ -106,7 +110,7 @@ def join_columns(row):
     return combined_string
 
 
-# Funkcja do klasyfikacji dat
+# Funkcja do klasyfikacji dat (Model CBR)
 def categorize_date(date):
     if date < pd.Timestamp('2007-01-01'):
         return 'retrogry'
@@ -116,6 +120,7 @@ def categorize_date(date):
         return 'nowinki'
 
 
+# Tworzenie dataframe'u dla modelu CBR
 def dataframe_gen2(data_file):
     # with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'rec_games.pkl'), 'rb') as file:
     #     data = pickle.load(file)
@@ -183,7 +188,3 @@ def dataframe_gen2(data_file):
     pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', data_file)
     with open(pickle_file, 'wb') as f:
         pickle.dump(merged_data, f)
-
-
-dataframe_gen2('rec_games_more.pkl')
-# dataframe_gen()

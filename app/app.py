@@ -3,7 +3,8 @@ import os
 import pickle
 import sys
 import threading
-import difflib  # Dodajemy bibliotekę difflib
+from experiments.exp_cbr import recommend, model_gen
+
 
 # Dodaj katalog nadrzędny do sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -34,7 +35,8 @@ def load_model():
             print("app: Model loaded.")
     except FileNotFoundError:
         print("app: Model file not found. Generating model...")
-        subprocess.run(["python", "generate_cbr.py"])
+        # Wywołaj funkcję model_gen do wygenerowania modelu
+        model_gen(DATA_FILE_PATH, MODEL_FILE_PATH)
         load_model()  # Rekurencyjnie próbuj załadować model ponownie
 
 def load_data():
